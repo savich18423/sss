@@ -2,25 +2,65 @@ import express from "express";
 import TelegramBot from "node-telegram-bot-api";
 
 const token = process.env.TELEGRAM_TOKEN;
+const CHANNEL_ID = "@CaseGalaxy"; // наш канал
+
 const bot = new TelegramBot(token, { polling: true });
 
-// Обработка /start
+// /start
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  const url = "https://savich18423.github.io/friendly-meme/"; // 👉 главная страница (index.html)
 
   bot.sendMessage(
     chatId,
-    "👋 Привет! Тебя приветствует CaseGalaxy 🚀\nОткрывай кейсы и начинай играть!",
+    "👋 Привет! Чтобы начать играть в CaseGalaxy 🚀, подпишись на наш канал:\n👉 https://t.me/CaseGalaxy",
     {
       reply_markup: {
         inline_keyboard: [
-          [{ text: "🎮 Начать играть", web_app: { url } }],
-          [{ text: "👤 Мой профиль", web_app: { url: url + "profile.html" } }]
+          [{ text: "✅ Проверить подписку", callback_data: "check_sub" }]
         ]
       }
     }
   );
+});
+
+// Проверка подписки
+bot.on("callback_query", async (query) => {
+  const chatId = query.message.chat.id;
+
+  if (query.data === "check_sub") {
+    try {
+      const member = await bot.getChatMember(CHANNEL_ID, chatId);
+
+      if (
+        member.status === "member" ||
+        member.status === "administrator" ||
+        member.status === "creator"
+      ) {
+        // Подписан
+        bot.sendMessage(chatId, "✅ Отлично! Доступ разрешён 🎉", {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "🎮 Играть",
+                  web_app: { url: "https://savich18423.github.io/friendly-meme/profile.html" }
+                }
+              ]
+            ]
+          }
+        });
+      } else {
+        // Не подписан
+        bot.sendMessage(
+          chatId,
+          "❌ Вы ещё не подписаны! Подпишитесь на канал 👉 https://t.me/CaseGalaxy и попробуйте снова."
+        );
+      }
+    } catch (e) {
+      bot.sendMessage(chatId, "⚠️ Ошибка проверки, попробуйте позже.");
+      console.error(e);
+    }
+  }
 });
 
 // Express для Railway
