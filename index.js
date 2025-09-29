@@ -6,7 +6,7 @@ const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  const url = "https://savich18423.github.io/friendly-meme/profile.html";
+  const url = "https://savich18423.github.io/friendly-meme/";
 
   bot.sendMessage(chatId, "✅ Привет! Вот твой профиль:", {
     reply_markup: {
